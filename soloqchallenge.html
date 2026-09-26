@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111310">
+    <title>SoloQ Challenge | LAN</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="masthead">
+        <div class="masthead-inner">
+            <a class="brand" href="/" aria-label="SoloQ Challenge inicio">
+                <span class="brand-mark">SQ</span>
+                <span>AUTISOLOQ<span class="brand-light">CHALLENGE</span></span>
+            </a>
+            <div class="server-label"><span class="server-dot"></span> LATINOAMÉRICA NORTE</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="leaderboard-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">RANKED SOLO / DUO</p>
+                    <h1>Clasificación <span>actual</span></h1>
+                </div>
+                <button id="refresh-button" class="refresh-button" type="button">
+                    <span class="refresh-icon" aria-hidden="true">↻</span>
+                    <span>Actualizar</span>
+                </button>
+            </div>
+            <div class="table-meta">
+                <span id="refresh-status" role="status" aria-live="polite">Conectando con Riot...</span>
+                <span class="live-label"><span class="server-dot"></span> AUTO · 5 MIN</span>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Invocador</th>
+                            <th>Rango / división</th>
+                            <th>Puntos</th>
+                            <th>Winrate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <tr><td colspan="5" class="loading-row">Cargando invocadores...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="rules-section">
+            <div class="rules-title">
+                <span class="rules-index">01</span>
+                <h2>Reglas del challenge</h2>
+            </div>
+            <ul>
+                <li>Rangos consultados automáticamente cada cinco minutos.</li>
+                <li>El último puesto sera el mas pendejo de todos.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>Autisoloq Challenge · LAN</p>
+        <p>Este producto no está avalado por Riot Games.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
