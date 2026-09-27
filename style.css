@@ -61,6 +61,7 @@ button, a {
     height: 34px;
     display: grid;
     place-items: center;
+    background: var(--lime);
     color: #171a13;
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 17px;
@@ -243,15 +244,25 @@ tbody tr:first-child {
     font-weight: 700;
 }
 
+.profile-icon {
+    width: 42px;
+    height: 42px;
+    margin-right: 10px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+}
+
 .rank-cell {
     display: table-cell;
     white-space: nowrap;
 }
 
 .rank-emblem {
-    width: 150px;
-    height: 100px;
-    margin-right: 7px;
+    width: 34px;
+    height: 34px;
+    margin-right: 9px;
     object-fit: contain;
     vertical-align: middle;
 }
