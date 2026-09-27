@@ -1,101 +1,95 @@
-const participantes = [
-    { nombre: 'Galar', tag: 'dead' },
-    { nombre: 'Luth', tag: 'GALAR' },
-    { nombre: 'GexitoIsCrying', tag: 'CRY' },
-    { nombre: 'GexitoIsDead', tag: 'DEAD' },
-    { nombre: 'DaveMoo12', tag: 'DVM12' },
-    { nombre: 'DvM12', tag: 'LAN' },
-    { nombre: 'WdeNeto', tag: '044' }
-];
-
-const tbody = document.getElementById('leaderboard-body');
-const status = document.getElementById('refresh-status');
-const refreshButton = document.getElementById('refresh-button');
+const leaderboardBody = document.querySelector('#leaderboard-body');
+const refreshButton = document.querySelector('#refresh-button');
+const refreshStatus = document.querySelector('#refresh-status');
 const refreshIntervalMs = 5 * 60 * 1000;
 
-function profileUrl(player) {
-    return `https://op.gg/lol/summoners/lan/${encodeURIComponent(player.nombre)}-${encodeURIComponent(player.tag)}`;
+function createCell(className, text) {
+	const cell = document.createElement('td');
+	if (className) cell.className = className;
+	cell.textContent = text;
+	return cell;
 }
 
-function addCell(row, content, className = '') {
-    const cell = document.createElement('td');
-    if (className) cell.className = className;
-    cell.textContent = content;
-    row.append(cell);
-    return cell;
+function renderParticipant(participant, index) {
+	const row = document.createElement('tr');
+	row.style.animationDelay = `${Math.min(index, 8) * 35}ms`;
+	row.append(createCell('position', String(index + 1)));
+	row.append(createCell('summoner-name', `${participant.nombre} #${participant.tag}`));
+
+	const rankCell = document.createElement('td');
+	rankCell.className = 'rank-cell';
+	if (participant.tier) {
+		const emblem = document.createElement('img');
+		emblem.className = 'rank-emblem';
+		emblem.src = `/rangos/emblem-${participant.tier.toLowerCase()}.png`;
+		emblem.alt = `Emblema ${participant.rango}`;
+		emblem.loading = 'lazy';
+		emblem.addEventListener('error', () => emblem.remove(), { once: true });
+		rankCell.append(emblem);
+	}
+	const rankLabel = document.createElement('span');
+	rankLabel.className = 'rank';
+	rankLabel.textContent = participant.rango;
+	rankCell.append(rankLabel);
+	row.append(rankCell);
+
+	row.append(createCell('points', participant.lp === null ? '--' : `${participant.lp} LP`));
+	row.append(createCell('winrate', participant.winrate === null ? '--' : `${participant.winrate}%`));
+
+	const statsCell = document.createElement('td');
+	const opggLink = document.createElement('a');
+	opggLink.className = 'opgg-link';
+	opggLink.href = participant.url;
+	opggLink.target = '_blank';
+	opggLink.rel = 'noopener noreferrer';
+	opggLink.textContent = 'OP.GG';
+	opggLink.setAttribute('aria-label', `Ver a ${participant.nombre} en OP.GG`);
+	statsCell.append(opggLink);
+	row.append(statsCell);
+
+	return row;
 }
 
-function renderPlayers(players, placeholder = false) {
-    tbody.replaceChildren();
-    const list = players.length ? players : participantes.map((player) => ({ ...player, url: profileUrl(player) }));
-
-    list.forEach((player, index) => {
-        const row = document.createElement('tr');
-        addCell(row, placeholder || player.error ? '--' : String(index + 1), 'position');
-
-        const nameCell = document.createElement('td');
-        nameCell.className = 'summoner-name';
-        const link = document.createElement('a');
-        link.href = player.url || profileUrl(player);
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = `${player.nombre} #${player.tag}`;
-        nameCell.append(link);
-        row.append(nameCell);
-
-        const rankCell = document.createElement('td');
-        const rank = document.createElement('span');
-        rank.className = `rank${player.rango && player.rango !== 'No disponible' && player.rango !== 'Sin clasificatoria' ? ` rank-${player.rango.split(' ')[0].toLowerCase()}` : ''}`;
-        rank.textContent = player.rango || (placeholder ? 'Esperando datos' : 'No disponible');
-        rankCell.append(rank);
-        row.append(rankCell);
-
-        addCell(row, Number.isInteger(player.lp) ? `${player.lp} LP` : '--');
-        addCell(row, Number.isInteger(player.winrate) ? `${player.winrate}%` : '--');
-        tbody.append(row);
-    });
+function showMessage(message) {
+	const row = document.createElement('tr');
+	const cell = createCell('loading-row', message);
+	cell.colSpan = 6;
+	row.append(cell);
+	leaderboardBody.replaceChildren(row);
 }
 
-function formatUpdateTime(value) {
-    return new Intl.DateTimeFormat('es-MX', { hour: '2-digit', minute: '2-digit' }).format(new Date(value));
-}
+async function loadLeaderboard(forceRefresh = false) {
+	refreshButton.disabled = true;
+	refreshButton.classList.add('is-loading');
+	refreshStatus.textContent = 'Consultando Riot...';
 
-async function loadLeaderboard(manual = false) {
-    refreshButton.disabled = true;
-    refreshButton.classList.add('is-loading');
-    if (manual) status.textContent = 'Consultando Riot...';
+	try {
+		const response = await fetch(`/api/leaderboard${forceRefresh ? '?refresh=1' : ''}`, { cache: 'no-store' });
+		const data = await response.json();
+		if (!response.ok) throw new Error(data.error || 'No se pudo cargar la clasificación.');
 
-    try {
-        const response = await fetch(`/api/leaderboard${manual ? '?refresh=1' : ''}`, { cache: 'no-store' });
-        if (!response.ok) throw new Error('No se pudo conectar con el servicio de Riot.');
-        const data = await response.json();
+		if (!data.configured) {
+			showMessage('Configura RIOT_API_KEY en el servidor para activar los rangos en vivo.');
+			refreshStatus.textContent = 'API de Riot sin configurar';
+			return;
+		}
 
-        if (!data.configured) {
-            renderPlayers([], true);
-            status.textContent = 'Configura RIOT_API_KEY en el servidor para activar los rangos en vivo.';
-            return;
-        }
-
-        renderPlayers(data.participants || []);
-        const timestamp = data.fetchedAt ? `Última actualización: ${formatUpdateTime(data.fetchedAt)}` : 'Esperando la primera actualización';
-        const participants = data.participants || [];
-        const failedCount = participants.filter((player) => player.error).length;
-        const hasUnauthorizedKey = participants.some((player) => player.error?.includes('401'));
-        status.textContent = hasUnauthorizedKey
-            ? 'Riot rechazó la API key (401). Actualiza RIOT_API_KEY en Render con una key vigente y vuelve a desplegar.'
-            : failedCount ? `${timestamp} · ${failedCount} cuenta(s) no disponibles` : timestamp;
-    } catch (error) {
-        status.textContent = error.message;
-        if (!tbody.children.length) renderPlayers([], true);
-    } finally {
-        refreshButton.disabled = false;
-        refreshButton.classList.remove('is-loading');
-    }
+		if (!data.participants.length) {
+			showMessage('No hay participantes para mostrar.');
+		} else {
+			leaderboardBody.replaceChildren(...data.participants.map(renderParticipant));
+		}
+		const updatedAt = new Date(data.fetchedAt);
+		refreshStatus.textContent = `Actualizado ${updatedAt.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`;
+	} catch (error) {
+		showMessage('No se pudo cargar la clasificación. Intenta actualizar en un momento.');
+		refreshStatus.textContent = error.message;
+	} finally {
+		refreshButton.disabled = false;
+		refreshButton.classList.remove('is-loading');
+	}
 }
 
 refreshButton.addEventListener('click', () => loadLeaderboard(true));
-document.addEventListener('DOMContentLoaded', () => {
-    renderPlayers([], true);
-    loadLeaderboard();
-    window.setInterval(() => loadLeaderboard(), refreshIntervalMs);
-});
+loadLeaderboard();
+window.setInterval(() => loadLeaderboard(), refreshIntervalMs);
