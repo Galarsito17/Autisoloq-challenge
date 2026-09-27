@@ -78,8 +78,12 @@ async function loadLeaderboard(manual = false) {
 
         renderPlayers(data.participants || []);
         const timestamp = data.fetchedAt ? `Última actualización: ${formatUpdateTime(data.fetchedAt)}` : 'Esperando la primera actualización';
-        const failedCount = (data.participants || []).filter((player) => player.error).length;
-        status.textContent = failedCount ? `${timestamp} · ${failedCount} cuenta(s) no disponibles` : timestamp;
+        const participants = data.participants || [];
+        const failedCount = participants.filter((player) => player.error).length;
+        const hasUnauthorizedKey = participants.some((player) => player.error?.includes('401'));
+        status.textContent = hasUnauthorizedKey
+            ? 'Riot rechazó la API key (401). Actualiza RIOT_API_KEY en Render con una key vigente y vuelve a desplegar.'
+            : failedCount ? `${timestamp} · ${failedCount} cuenta(s) no disponibles` : timestamp;
     } catch (error) {
         status.textContent = error.message;
         if (!tbody.children.length) renderPlayers([], true);
