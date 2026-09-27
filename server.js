@@ -4,7 +4,7 @@ const path = require('node:path');
 
 const root = __dirname;
 const port = Number(process.env.PORT || 3000);
-const apiKey = process.env.RIOT_API_KEY;
+const apiKey = process.env.RIOT_API_KEY?.trim();
 const refreshIntervalMs = 5 * 60 * 1000;
 const profiles = [
     { nombre: 'Galar', tag: 'dead' },
