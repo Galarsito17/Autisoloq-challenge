@@ -33,6 +33,8 @@ function renderParticipant(participant, index) {
 
 	const rankCell = document.createElement('td');
 	rankCell.className = 'rank-cell';
+	const rankInfo = document.createElement('span');
+	rankInfo.className = 'rank-info';
 	if (participant.tier) {
 		const emblem = document.createElement('img');
 		emblem.className = 'rank-emblem';
@@ -40,12 +42,13 @@ function renderParticipant(participant, index) {
 		emblem.alt = `Emblema ${participant.rango}`;
 		emblem.loading = 'lazy';
 		emblem.addEventListener('error', () => emblem.remove(), { once: true });
-		rankCell.append(emblem);
+		rankInfo.append(emblem);
 	}
 	const rankLabel = document.createElement('span');
 	rankLabel.className = 'rank';
 	rankLabel.textContent = participant.rango;
-	rankCell.append(rankLabel);
+	rankInfo.append(rankLabel);
+	rankCell.append(rankInfo);
 	row.append(rankCell);
 
 	row.append(createCell('points', participant.lp === null ? '--' : `${participant.lp} LP`));
