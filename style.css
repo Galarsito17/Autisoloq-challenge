@@ -259,12 +259,16 @@ tbody tr:first-child {
     white-space: nowrap;
 }
 
+.rank-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .rank-emblem {
-    width: 140px;
-    height: 100px;
-    margin-right: 8px;
+    width: 34px;
+    height: 34px;
     object-fit: contain;
-    vertical-align: middle;
 }
 
 .rank {
