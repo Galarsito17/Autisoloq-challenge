@@ -14,7 +14,22 @@ function renderParticipant(participant, index) {
 	const row = document.createElement('tr');
 	row.style.animationDelay = `${Math.min(index, 8) * 35}ms`;
 	row.append(createCell('position', String(index + 1)));
-	row.append(createCell('summoner-name', `${participant.nombre} #${participant.tag}`));
+
+	const summonerCell = document.createElement('td');
+	summonerCell.className = 'summoner-name';
+	if (participant.profileIconUrl) {
+		const profileIcon = document.createElement('img');
+		profileIcon.className = 'profile-icon';
+		profileIcon.src = participant.profileIconUrl;
+		profileIcon.alt = '';
+		profileIcon.loading = 'lazy';
+		profileIcon.addEventListener('error', () => profileIcon.remove(), { once: true });
+		summonerCell.append(profileIcon);
+	}
+	const summonerLabel = document.createElement('span');
+	summonerLabel.textContent = `${participant.nombre} #${participant.tag}`;
+	summonerCell.append(summonerLabel);
+	row.append(summonerCell);
 
 	const rankCell = document.createElement('td');
 	rankCell.className = 'rank-cell';
