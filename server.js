@@ -59,7 +59,16 @@ async function getParticipant(profile) {
     const soloQueue = entries.find((entry) => entry.queueType === 'RANKED_SOLO_5x5');
 
     if (!soloQueue) {
-        return { ...profile, url: opggUrl(profile), rango: 'Sin clasificatoria', lp: null, winrate: null, order: -1 };
+        return {
+            ...profile,
+            url: opggUrl(profile),
+            rango: 'Sin clasificatoria',
+            tier: null,
+            division: null,
+            lp: null,
+            winrate: null,
+            order: -1
+        };
     }
 
     const tier = tiers[soloQueue.tier] || { label: soloQueue.tier, order: -1 };
@@ -71,6 +80,8 @@ async function getParticipant(profile) {
         ...profile,
         url: opggUrl(profile),
         rango: rankLabel,
+        tier: soloQueue.tier,
+        division: isApexTier ? null : soloQueue.rank,
         lp: soloQueue.leaguePoints,
         winrate: Math.round((soloQueue.wins / (soloQueue.wins + soloQueue.losses)) * 100),
         order: tier.order * 100000 + (isApexTier ? 0 : divisionOrder * 1000) + soloQueue.leaguePoints
@@ -90,6 +101,8 @@ async function loadLeaderboard() {
                 ...profile,
                 url: opggUrl(profile),
                 rango: 'No disponible',
+                tier: null,
+                division: null,
                 lp: null,
                 winrate: null,
                 error: error.message,
@@ -134,7 +147,8 @@ function serveFile(response, filePath) {
     const contentTypes = {
         '.html': 'text/html; charset=utf-8',
         '.css': 'text/css; charset=utf-8',
-        '.js': 'text/javascript; charset=utf-8'
+        '.js': 'text/javascript; charset=utf-8',
+        '.png': 'image/png'
     };
     fs.readFile(filePath, (error, content) => {
         if (error) {
