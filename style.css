@@ -61,7 +61,6 @@ button, a {
     height: 34px;
     display: grid;
     place-items: center;
-    background: var(--lime);
     color: #171a13;
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 17px;
@@ -266,8 +265,8 @@ tbody tr:first-child {
 }
 
 .rank-emblem {
-    width: 34px;
-    height: 34px;
+    width: 145px;
+    height: 100px;
     object-fit: contain;
 }
 
