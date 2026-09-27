@@ -250,8 +250,8 @@ tbody tr:first-child {
 }
 
 .rank-emblem {
-    width: 42px;
-    height: 42px;
+    width: 100px;
+    height: 100px;
     margin-right: 9px;
     object-fit: contain;
     vertical-align: middle;
