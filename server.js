@@ -33,6 +33,8 @@ let cache = null;
 let cacheAt = 0;
 let refreshInProgress = null;
 let lastForcedRefreshAt = 0;
+let dataDragonVersion = null;
+let dataDragonVersionAt = 0;
 
 async function riotGet(url) {
     const response = await fetch(url, {
@@ -47,6 +49,26 @@ async function riotGet(url) {
     return response.json();
 }
 
+async function getDataDragonVersion() {
+    if (dataDragonVersion && Date.now() - dataDragonVersionAt < 6 * 60 * 60 * 1000) {
+        return dataDragonVersion;
+    }
+
+    try {
+        const response = await fetch('https://ddragon.leagueoflegends.com/api/versions.json', {
+            signal: AbortSignal.timeout(5000)
+        });
+        if (!response.ok) return dataDragonVersion;
+
+        const versions = await response.json();
+        dataDragonVersion = versions[0] || dataDragonVersion;
+        dataDragonVersionAt = Date.now();
+        return dataDragonVersion;
+    } catch {
+        return dataDragonVersion;
+    }
+}
+
 async function getParticipant(profile) {
     const riotIdUrl = new URL(
         `https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(profile.nombre)}/${encodeURIComponent(profile.tag)}`
@@ -55,13 +77,21 @@ async function getParticipant(profile) {
     const entriesUrl = new URL(
         `https://la1.api.riotgames.com/lol/league/v4/entries/by-puuid/${encodeURIComponent(account.puuid)}`
     );
-    const entries = await riotGet(entriesUrl);
+    const summonerUrl = new URL(
+        `https://la1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(account.puuid)}`
+    );
+    const [entries, summoner] = await Promise.all([
+        riotGet(entriesUrl),
+        riotGet(summonerUrl).catch(() => null)
+    ]);
+    const profileIconId = summoner?.profileIconId ?? null;
     const soloQueue = entries.find((entry) => entry.queueType === 'RANKED_SOLO_5x5');
 
     if (!soloQueue) {
         return {
             ...profile,
             url: opggUrl(profile),
+            profileIconId,
             rango: 'Sin clasificatoria',
             tier: null,
             division: null,
@@ -79,6 +109,7 @@ async function getParticipant(profile) {
     return {
         ...profile,
         url: opggUrl(profile),
+        profileIconId,
         rango: rankLabel,
         tier: soloQueue.tier,
         division: isApexTier ? null : soloQueue.rank,
@@ -93,13 +124,22 @@ function opggUrl(profile) {
 }
 
 async function loadLeaderboard() {
+    const currentDataDragonVersion = await getDataDragonVersion();
     const participants = await Promise.all(profiles.map(async (profile) => {
         try {
-            return await getParticipant(profile);
+            const participant = await getParticipant(profile);
+            return {
+                ...participant,
+                profileIconUrl: participant.profileIconId !== null && currentDataDragonVersion
+                    ? `https://ddragon.leagueoflegends.com/cdn/${currentDataDragonVersion}/img/profileicon/${participant.profileIconId}.png`
+                    : null
+            };
         } catch (error) {
             return {
                 ...profile,
                 url: opggUrl(profile),
+                profileIconId: null,
+                profileIconUrl: null,
                 rango: 'No disponible',
                 tier: null,
                 division: null,
