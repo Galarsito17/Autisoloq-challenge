@@ -10,7 +10,7 @@ const profiles = [
     { nombre: 'Galar', tag: 'dead' },
     { nombre: 'Luth', tag: 'GALAR' },
     { nombre: 'GexitoIsCrying', tag: 'CRY' },
-    { nombre: 'GexitoIsDead', tag: 'DEAD' },
+    { nombre: 'GexitoLoveTacos', tag: 'TLG' },
     { nombre: 'DaveMoo12', tag: 'DVM12' },
     { nombre: 'DvM12', tag: 'LAN' },
     { nombre: 'WdeNeto', tag: '044' }
