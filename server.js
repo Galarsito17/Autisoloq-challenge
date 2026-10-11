@@ -13,7 +13,8 @@ const profiles = [
     { nombre: 'GexitoLoveTacos', tag: 'TLG' },
     { nombre: 'DaveMoo12', tag: 'DVM12' },
     { nombre: 'DvM12', tag: 'LAN' },
-    { nombre: 'WdeNeto', tag: '044' }
+    { nombre: 'WdeNeto', tag: '044' },
+    { nombre: 'StepUwU', tag: 'Wha' }
 ];
 
 const tiers = {
